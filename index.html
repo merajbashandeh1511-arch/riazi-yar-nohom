@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ریاضی‌یار نهم</title>
+<style>
+body{font-family:Tahoma;background:#eef3ff;margin:0;color:#172554}
+header{background:linear-gradient(120deg,#14213d,#2563eb);color:white;text-align:center;padding:30px}
+main{max-width:650px;margin:25px auto;padding:15px}
+.card{background:white;padding:22px;border-radius:18px;box-shadow:0 5px 20px #0001}
+button{background:#2563eb;color:white;border:0;padding:12px 20px;border-radius:10px;cursor:pointer;font-size:16px}
+.option{display:block;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:10px;cursor:pointer}
+#result{font-size:20px;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<div style="font-size:45px">🎓</div>
+<h1>ریاضی‌یار نهم</h1>
+<p>هر روز یک قدم، تا تسلط کامل بر ریاضی نهم!</p>
+</header>
+<main>
+<div class="card">
+<h2>آزمون آزمایشی فصل اول: مجموعه‌ها</h2>
+<p id="number"></p>
+<h3 id="question"></h3>
+<div id="options"></div>
+<p id="feedback"></p>
+<button id="next" onclick="next()" disabled>سؤال بعدی</button>
+<p id="result"></p>
+</div>
+</main>
+<script>
+const questions=[
+["کدام گزینه یک مجموعه است؟",["دانش‌آموزان باهوش","حروف واژه بابا: {ب، ا}","غذاهای خوشمزه","عددهای زیبا"],1],
+["تعداد اعضای {۱،۲،۳} چند است؟",["۱","۲","۳","۴"],2],
+["نماد عضو بودن کدام است؟",["∈","∉","⊂","="],0],
+["کدام عدد عضو {۲،۴،۶} است؟",["۱","۳","۴","۵"],2],
+["مجموعه تهی چند عضو دارد؟",["صفر","یک","دو","سه"],0],
+["کدام مجموعه با {۱،۲،۳} برابر است؟",["{۱،۲}","{۳،۲،۱}","{۱،۳،۴}","{۲،۳،۴}"],1],
+["اگر A={۱،۲} و B={۱،۲،۳} باشد، کدام درست است؟",["A زیرمجموعه B است","B زیرمجموعه A است","برابرند","هیچ‌کدام"],0],
+["کدام مجموعه سه عضو متمایز دارد؟",["{۱،۱،۲}","{الف،ب،ج}","{۵،۵،۵}","{۷،۷،۸}"],1],
+["کدام عدد عضو {۵،۷،۹} نیست؟",["۵","۷","۸","۹"],2],
+["اجتماع دو مجموعه شامل چیست؟",["فقط اعضای مشترک","همه اعضای دو مجموعه بدون تکرار","فقط اعضای اول","هیچ‌کدام"],1]
+];
+let index=0,score=0,answered=false;
+function show(){
+answered=false;
+document.getElementById("number").textContent="سؤال "+(index+1)+" از ۱۰";
+document.getElementById("question").textContent=questions[index][0];
+document.getElementById("options").innerHTML="";
+questions[index][1].forEach((v,i)=>{
+let b=document.createElement("button");
+b.className="option";
+b.style.display="block";b.style.width="100%";b.style.background="white";b.style.color="#172554";
+b.textContent=["الف) ","ب) ","ج) ","د) "][i]+v;
+b.onclick=()=>answer(i);
+document.getElementById("options").appendChild(b);
+});
+document.getElementById("feedback").textContent="";
+document.getElementById("next").disabled=true;
+document.getElementById("next").textContent=index===9?"نتیجه آزمون":"سؤال بعدی";
+}
+function answer(n){
+if(answered)return;
+answered=true;
+let correct=questions[index][2];
+if(n===correct){score+=2;document.getElementById("feedback").textContent="آفرین! پاسخ درست است 🌟";}
+else{document.getElementById("feedback").textContent="پاسخ درست: "+questions[index][1][correct];}
+document.getElementById("next").disabled=false;
+}
+function next(){
+if(!answered)return;
+if(index<9){index++;show();}
+else{
+document.querySelector(".card").innerHTML="<h2>نتیجه آزمون 🎉</h2><p id='result'>نمره تو: "+score+" از ۲۰</p><button onclick='location.reload()'>آزمون دوباره</button>";
+}
+}
+show();
+</script>
+</body>
+</html>
