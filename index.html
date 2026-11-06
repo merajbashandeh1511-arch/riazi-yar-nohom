@@ -6,79 +6,367 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ریاضی‌یار نهم</title>
 <style>
-body{font-family:Tahoma;background:#eef3ff;margin:0;color:#172554}
-header{background:linear-gradient(120deg,#14213d,#2563eb);color:white;text-align:center;padding:30px}
-main{max-width:650px;margin:25px auto;padding:15px}
-.card{background:white;padding:22px;border-radius:18px;box-shadow:0 5px 20px #0001}
-button{background:#2563eb;color:white;border:0;padding:12px 20px;border-radius:10px;cursor:pointer;font-size:16px}
-.option{display:block;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:10px;cursor:pointer}
-#result{font-size:20px;font-weight:bold}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f5fb;color:#17233b;font-family:Tahoma,Arial;line-height:1.9}
+header{background:linear-gradient(120deg,#14213d,#2563eb);color:white;text-align:center;padding:25px}
+header h1{margin:5px;font-size:27px}
+main{max-width:900px;margin:22px auto;padding:0 14px}
+.card{background:white;padding:20px;border-radius:17px;margin-bottom:16px;box-shadow:0 4px 18px #0001}
+h2{font-size:21px;margin-top:0}
+h3{font-size:17px}
+button{font:inherit;border:0;border-radius:10px;padding:10px 17px;background:#2563eb;color:white;cursor:pointer;margin:4px}
+button:disabled{opacity:.5}
+.secondary{background:#e8eefb;color:#17356e}
+input{font:inherit;padding:12px;border:1px solid #cbd5e1;border-radius:10px;width:100%;margin:8px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.chapter{background:#f8faff;color:#17233b;border:1px solid #dce6f7;text-align:right;padding:14px;border-radius:13px;width:100%;margin:0}
+.chapter b{display:block;color:#2563eb}
+.chapter small{color:#64748b}
+.note{background:#fff8e8;border-right:4px solid #fca311;padding:10px;margin:10px 0;border-radius:8px}
+.option{display:block;width:100%;text-align:right;background:white;color:#17233b;border:1px solid #dbe3ef;margin:9px 0;padding:11px;border-radius:10px}
+.option.selected{border:2px solid #2563eb;background:#eff6ff}
+.muted{color:#64748b;font-size:13px}
+.good{color:#16803c;background:#eaf8ef;padding:10px;border-radius:9px}
+.bad{color:#b42318;background:#fff0ee;padding:10px;border-radius:9px}
+.progress{height:9px;background:#e5eaf2;border-radius:9px;overflow:hidden}
+.progress span{display:block;height:100%;background:#fca311;width:0}
+.hidden{display:none}
 </style>
 </head>
 <body>
 <header>
-<div style="font-size:45px">🎓</div>
-<h1>ریاضی‌یار نهم</h1>
-<p>هر روز یک قدم، تا تسلط کامل بر ریاضی نهم!</p>
+ <div style="font-size:43px">🎓</div>
+ <h1>ریاضی‌یار نهم</h1>
+ <p>هر روز یک قدم، تا تسلط کامل بر ریاضی نهم!</p>
 </header>
 <main>
-<div class="card">
-<h2>آزمون آزمایشی فصل اول: مجموعه‌ها</h2>
-<p id="number"></p>
-<h3 id="question"></h3>
-<div id="options"></div>
-<p id="feedback"></p>
-<button id="next" onclick="next()" disabled>سؤال بعدی</button>
-<p id="result"></p>
-</div>
+
+<section id="welcome" class="card">
+ <h2>به ریاضی‌یار نهم خوش آمدی!</h2>
+ <p>برای شروع، نام خودت را وارد کن.</p>
+ <input id="nameInput" placeholder="نام دانش‌آموز">
+ <button onclick="saveName()">ورود به برنامه</button>
+</section>
+
+<section id="home" class="hidden">
+ <div class="card">
+  <h2 id="hello"></h2>
+  <p>یک فصل را انتخاب کن تا آموزش، نکات امتحانی و آزمون آن را ببینی.</p>
+  <p id="overall" class="muted"></p>
+ </div>
+ <div class="grid" id="chapters"></div>
+ <div class="card">
+  <h2>📊 کارنامهٔ من</h2>
+  <div id="report">هنوز آزمونی انجام نداده‌ای.</div>
+  <button class="secondary" onclick="resetProgress()">پاک‌کردن پیشرفت آزمون‌ها</button>
+ </div>
+</section>
+
+<section id="lesson" class="hidden">
+ <div class="card">
+  <span class="muted" id="chapterLabel"></span>
+  <h2 id="chapterTitle"></h2>
+  <h3>📖 آموزش فصل</h3>
+  <div id="explanation"></div>
+  <h3>⭐ نکات مهم امتحانی</h3>
+  <div id="tips"></div>
+  <h3>💡 مثال آموزشی</h3>
+  <div id="example"></div>
+  <div class="note">پیشنهاد: قبل از آزمون، آموزش و نکات این فصل را با دقت بخوان.</div>
+  <button onclick="startQuiz()">شروع آزمون ۱۰ سؤالی</button>
+  <button class="secondary" onclick="goHome()">بازگشت به فصل‌ها</button>
+ </div>
+</section>
+
+<section id="quiz" class="hidden">
+ <div class="card">
+  <span class="muted" id="quizChapter"></span>
+  <h2>آزمون فصل</h2>
+  <div class="progress"><span id="bar"></span></div>
+  <p id="counter" class="muted"></p>
+  <h3 id="question"></h3>
+  <div id="options"></div>
+  <div id="feedback"></div>
+  <button id="next" onclick="nextQuestion()" disabled>سؤال بعدی</button>
+  <button class="secondary" onclick="goHome()">خروج از آزمون</button>
+ </div>
+</section>
+
+<section id="result" class="hidden">
+ <div class="card">
+  <h2>🏆 نتیجهٔ آزمون</h2>
+  <h2 id="score"></h2>
+  <p id="resultText"></p>
+  <h3>بررسی پاسخ‌ها</h3>
+  <div id="review"></div>
+  <button onclick="showLesson(current)">مرور فصل</button>
+  <button class="secondary" onclick="goHome()">بازگشت به صفحهٔ اصلی</button>
+ </div>
+</section>
+
 </main>
 <script>
-const questions=[
-["کدام گزینه یک مجموعه است؟",["دانش‌آموزان باهوش","حروف واژه بابا: {ب، ا}","غذاهای خوشمزه","عددهای زیبا"],1],
-["تعداد اعضای {۱،۲،۳} چند است؟",["۱","۲","۳","۴"],2],
-["نماد عضو بودن کدام است؟",["∈","∉","⊂","="],0],
-["کدام عدد عضو {۲،۴،۶} است؟",["۱","۳","۴","۵"],2],
-["مجموعه تهی چند عضو دارد؟",["صفر","یک","دو","سه"],0],
-["کدام مجموعه با {۱،۲،۳} برابر است؟",["{۱،۲}","{۳،۲،۱}","{۱،۳،۴}","{۲،۳،۴}"],1],
-["اگر A={۱،۲} و B={۱،۲،۳} باشد، کدام درست است؟",["A زیرمجموعه B است","B زیرمجموعه A است","برابرند","هیچ‌کدام"],0],
-["کدام مجموعه سه عضو متمایز دارد؟",["{۱،۱،۲}","{الف،ب،ج}","{۵،۵،۵}","{۷،۷،۸}"],1],
-["کدام عدد عضو {۵،۷،۹} نیست؟",["۵","۷","۸","۹"],2],
-["اجتماع دو مجموعه شامل چیست؟",["فقط اعضای مشترک","همه اعضای دو مجموعه بدون تکرار","فقط اعضای اول","هیچ‌کدام"],1]
+const chapters=[
+{
+title:"مجموعه‌ها",
+desc:"مفهوم مجموعه، نمایش مجموعه، عضو و زیرمجموعه، اجتماع و اشتراک",
+lesson:`مجموعه، دسته‌ای از اشیای مشخص و قابل تشخیص است. اعضای مجموعه را داخل آکولاد می‌نویسیم.
+مثلاً A={۱،۲،۳}. نماد ∈ برای عضو بودن و ∉ برای عضو نبودن استفاده می‌شود.
+مجموعهٔ تهی هیچ عضوی ندارد و با ∅ نشان داده می‌شود.
+اجتماع دو مجموعه شامل همهٔ اعضای آن‌ها بدون تکرار است. اشتراک شامل اعضای مشترک دو مجموعه است.`,
+tips:["ترتیب اعضای مجموعه مهم نیست.","عضو تکراری در مجموعه فقط یک بار حساب می‌شود.","مجموعهٔ تهی صفر عضو دارد.","اگر همهٔ اعضای A در B باشند، A زیرمجموعهٔ B است.","در اجتماع، اعضای هر دو مجموعه را می‌آوریم؛ در اشتراک فقط اعضای مشترک را."],
+example:"اگر A={۱،۲،۳} و B={۳،۴} باشد، اجتماع آن‌ها {۱،۲،۳،۴} و اشتراک آن‌ها {۳} است.",
+q:[
+["تعداد اعضای {۱،۲،۳} چند است؟","۱|۲|۳|۴",2,"سه عضو متمایز دارد."],
+["نماد عضو بودن کدام است؟","∈|∉|⊂|=",0,"نماد ∈ یعنی عضو مجموعه است."],
+["مجموعهٔ تهی چند عضو دارد؟","صفر|یک|دو|سه",0,"مجموعهٔ تهی هیچ عضوی ندارد."],
+["کدام مجموعه با {۱،۲،۳} برابر است؟","{۱،۲}|{۳،۲،۱}|{۱،۳،۴}|{۲،۳،۴}",1,"ترتیب اعضا در مجموعه مهم نیست."],
+["اگر A={۱،۲} و B={۱،۲،۳} باشد، کدام درست است؟","A زیرمجموعهٔ B است|B زیرمجموعهٔ A است|برابرند|هیچ‌کدام",0,"تمام اعضای A در B هستند."],
+["اجتماع {۱،۲} و {۲،۳} چیست؟","{۲}|{۱،۲،۳}|{۱،۳}|{۱،۲،۲،۳}",1,"اعضای هر دو مجموعه بدون تکرار."],
+["اشتراک {۱،۲،۳} و {۲،۳،۴} چیست؟","{۱،۴}|{۲،۳}|{۱،۲،۳،۴}|∅",1,"۲ و ۳ عضو مشترک هستند."],
+["کدام نماد برای عضو نبودن است؟","∈|∉|⊂|∪",1,"نماد ∉ یعنی عضو نیست."],
+["کدام عبارت درست است؟","۵∈{۱،۲،۳}|۲∈{۱،۲،۳}|۴∈{۱،۲،۳}|۱∉{۱،۲،۳}",1,"عدد ۲ در مجموعه وجود دارد."],
+["اگر A={الف،ب،ج} باشد، چند عضو دارد؟","۱|۲|۳|۴",2,"سه عضو متمایز دارد."]
+]},
+{
+title:"عددهای حقیقی",
+desc:"اعداد گویا و گنگ، محور اعداد، قدر مطلق و ریشه",
+lesson:`عددهای حقیقی شامل عددهای گویا و گنگ هستند. عدد گویا را می‌توان به شکل کسر دو عدد صحیح با مخرج ناصفر نوشت.
+عددهای صحیح، طبیعی و اعشاری مختوم یا متناوب از نمونه‌های عددهای گویا هستند.
+عددهایی مانند √۲ که نمایش اعشاری نامتناهی و غیرمتناوب دارند، گنگ‌اند.
+قدر مطلق یک عدد، فاصلهٔ آن از صفر روی محور است و همیشه نامنفی است.`,
+tips:["هر عدد صحیح یک عدد گویاست.","هر عدد طبیعی یک عدد صحیح است.","√۹ برابر ۳ است.","قدر مطلق −۵ برابر ۵ است.","عدد گنگ را نمی‌توان به صورت کسر دو عدد صحیح نوشت."],
+example:"|−۷|=۷ و √۴۹=۷ است.",
+q:[
+["کدام عدد گویاست؟","√۲|π||۳/۴|√۵",2,"۳/۴ نسبت دو عدد صحیح است."],
+["قدر مطلق −۸ چیست؟","−۸|۸|۰|۱",1,"فاصله از صفر برابر ۸ است."],
+["√۸۱ برابر است با؟","۷|۸|۹|۱۰",2,"۹×۹=۸۱."],
+["کدام عدد گنگ است؟","۰/۵|۱/۳|√۲|۴",2,"√۲ اعشاری نامتناهی و غیرمتناوب دارد."],
+["عدد −۳ در کدام دسته است؟","طبیعی|صحیح|فقط گنگ|غیرحقیقی",1,"−۳ عدد صحیح است."],
+["کدام عدد بزرگ‌تر است؟","−۵|−۲|−۸|−۹",1,"روی محور، −۲ از بقیه راست‌تر است."],
+["قدر مطلق صفر چیست؟","۰|۱|−۱|تعریف ندارد",0,"فاصلهٔ صفر از خودش صفر است."],
+["√۱۰۰ چیست؟","۵|۱۰|۲۰|۱۰۰",1,"۱۰ به توان ۲ برابر ۱۰۰ است."],
+["کدام عدد صحیح نیست؟","−۲|۰|۵|۲/۳",3,"۲/۳ عدد صحیح نیست."],
+["بین ۲ و ۵ کدام عدد قرار دارد؟","۱|۳|۶|۷",1,"۳ بین ۲ و ۵ است."]
+]},
+{
+title:"استدلال و اثبات در هندسه",
+desc:"گزاره، استدلال، هم‌نهشتی و ویژگی‌های هندسی",
+lesson:`در هندسه برای اثبات یک حکم از تعریف‌ها، فرض‌ها و قضیه‌های شناخته‌شده استفاده می‌کنیم.
+دو شکل هم‌نهشت‌اند اگر اندازه و شکل یکسان داشته باشند؛ یعنی بتوان آن‌ها را بر هم منطبق کرد.
+مجموع زاویه‌های داخلی مثلث ۱۸۰ درجه است.
+در مثلث متساوی‌الساقین، زاویه‌های روبه‌روی دو ضلع برابر، با هم برابرند.`,
+tips:["مجموع زاویه‌های مثلث ۱۸۰ درجه است.","زاویه‌های متقابل به رأس با هم برابرند.","در مثلث متساوی‌الساقین، زاویه‌های قاعده برابرند.","برای اثبات، باید دلیل هر مرحله را بنویسی.","هم‌نهشتی یعنی برابری شکل و اندازه."],
+example:"اگر دو زاویهٔ مثلث ۵۰ و ۶۰ درجه باشند، زاویهٔ سوم ۷۰ درجه است.",
+q:[
+["مجموع زاویه‌های داخلی مثلث چند درجه است؟","۹۰|۱۸۰|۲۷۰|۳۶۰",1,"مجموع زاویه‌های مثلث ۱۸۰ درجه است."],
+["زاویهٔ متقابل به رأس با زاویهٔ ۴۰ درجه چند است؟","۴۰|۵۰|۱۴۰|۱۸۰",0,"زاویه‌های متقابل به رأس برابرند."],
+["در مثلث متساوی‌الساقین چه چیزی برابر است؟","همه ضلع‌ها|زاویه‌های قاعده|همه زاویه‌ها|هیچ‌کدام",1,"زاویه‌های قاعده برابرند."],
+["اگر دو زاویهٔ مثلث ۵۰ و ۶۰ باشند، زاویه سوم چیست؟","۶۰|۷۰|۸۰|۹۰",1,"۱۸۰−۱۱۰=۷۰."],
+["زاویهٔ راست چند درجه است؟","۴۵|۶۰|۹۰|۱۸۰",2,"زاویهٔ راست ۹۰ درجه است."],
+["دو شکل هم‌نهشت چه ویژگی دارند؟","فقط محیط برابر|شکل و اندازه برابر|فقط مساحت برابر|رنگ برابر",1,"شکل‌ها بر هم منطبق می‌شوند."],
+["مجموع زاویه‌های روی یک خط راست چند درجه است؟","۹۰|۱۲۰|۱۸۰|۳۶۰",2,"زاویهٔ نیم‌صفحه ۱۸۰ درجه است."],
+["اگر یک زاویه ۱۲۰ درجه باشد، مکمل آن چند است؟","۳۰|۶۰|۹۰|۱۲۰",1,"مجموع دو زاویهٔ مکمل ۱۸۰ است."],
+["در مثلث متساوی‌الاضلاع هر زاویه چند درجه است؟","۴۵|۶۰|۹۰|۱۲۰",1,"۱۸۰ تقسیم بر ۳ برابر ۶۰ است."],
+["کدام مورد برای اثبات لازم است؟","حدس تنها|دلیل منطقی|رنگ شکل|اندازه کاغذ",1,"اثبات باید بر دلیل منطقی تکیه کند."]
+]},
+{
+title:"توان و ریشه",
+desc:"قوانین توان، توان صفر، توان منفی و ریشه‌گیری",
+lesson:`توان نشان می‌دهد یک عدد چند بار در خودش ضرب شده است. در aⁿ، عدد a پایه و n توان است.
+در ضرب توان‌های هم‌پایه، توان‌ها جمع می‌شوند. در تقسیم توان‌های هم‌پایه، توان‌ها کم می‌شوند.
+هر عدد ناصفر به توان صفر برابر ۱ است.
+ریشهٔ دوم عدد نامنفی، عددی است که مربع آن برابر عدد داده‌شده باشد.`,
+tips:["aᵐ×aⁿ=aᵐ⁺ⁿ","aᵐ÷aⁿ=aᵐ⁻ⁿ برای a ناصفر.","(aᵐ)ⁿ=aᵐⁿ","a⁰=۱ برای a ناصفر.","√a عددی نامنفی است که مربعش a باشد."],
+example:"۲³×۲²=۲⁵=۳۲ و √۶۴=۸ است.",
+q:[
+["۲ به توان ۳ چند است؟","۶|۸|۹|۱۲",1,"۲×۲×۲=۸."],
+["۳² برابر چیست؟","۶|۹|۱۲|۱۸",1,"۳×۳=۹."],
+["۵⁰ برابر است با؟","۰|۱|۵|۲۵",1,"هر عدد ناصفر به توان صفر برابر ۱ است."],
+["۲²×۲³ برابر است با؟","۲⁵|۲⁶|۲¹|۲⁹",0,"توان‌ها جمع می‌شوند."],
+["√۴۹ چند است؟","۶|۷|۸|۹",1,"۷×۷=۴۹."],
+["۱۰² برابر چیست؟","۱۰|۲۰|۱۰۰|۱۰۰۰",2,"۱۰×۱۰=۱۰۰."],
+["۴³÷۴² برابر چیست؟","۴|۱۶|۶۴|۲",0,"توان‌ها کم می‌شوند: ۴¹."],
+["(۲²)³ برابر چیست؟","۲⁵|۲⁶|۲⁸|۲⁹",1,"توان‌ها در هم ضرب می‌شوند."],
+["√۱۲۱ برابر است با؟","۹|۱۰|۱۱|۱۲",2,"۱۱×۱۱=۱۲۱."],
+["۲⁻¹ برابر است با؟","۲|−۲|۱/۲|−۱/۲",2,"توان منفی یعنی معکوس پایه."]
+]},
+{
+title:"عبارت‌های جبری",
+desc:"ساده‌سازی، اتحادها، تجزیه و ضرب عبارت‌ها",
+lesson:`در عبارت جبری از عددها، متغیرها و عمل‌های ریاضی استفاده می‌شود.
+جمله‌های متشابه، متغیرها و توان‌های یکسان دارند و می‌توان ضرایب آن‌ها را جمع کرد.
+برای ضرب یک عدد در پرانتز، آن عدد را در همهٔ جمله‌های داخل پرانتز ضرب می‌کنیم.
+اتحاد مربع مجموع: (a+b)²=a²+2ab+b².`,
+tips:["فقط جمله‌های متشابه را با هم جمع کن.","در توزیع، همهٔ جمله‌های داخل پرانتز ضرب می‌شوند.","(a+b)(a−b)=a²−b²","علامت منفی را هنگام باز کردن پرانتز فراموش نکن.","ضریب x در x برابر ۱ است."],
+example:"۳x+۲x=۵x و ۲(x+۳)=۲x+۶ است.",
+q:[
+["۳x+۲x برابر چیست؟","۵x|۶x|۵x²|x",0,"جمله‌های متشابه را جمع می‌کنیم."],
+["۲(x+۳) برابر چیست؟","۲x+۳|۲x+۶|x+۶|۲x+۵",1,"۲ در هر دو جمله ضرب می‌شود."],
+["ضریب x در ۷x چیست؟","x|۷|۱|۰",1,"عدد ۷ ضریب x است."],
+["x+x+x برابر چیست؟","x³|۳x|۳+x|x",1,"سه جملهٔ x با هم جمع می‌شوند."],
+["(a+b)² کدام است؟","a²+b²|a²+2ab+b²|a²−b²|۲ab",1,"اتحاد مربع مجموع."],
+["۵x−۲x برابر چیست؟","۷x|۳x|۱۰x|۳",1,"۵ منهای ۲ برابر ۳ است."],
+["۳(x−۲) برابر چیست؟","۳x−۲|۳x−۶|۳x+۶|x−۶",1,"۳ در x و −۲ ضرب می‌شود."],
+["x²×x³ برابر چیست؟","x⁵|x⁶|x|x⁹",0,"توان‌ها جمع می‌شوند."],
+["(a+b)(a−b) برابر چیست؟","a²+b²|a²−b²|a²−2ab+b²|۲ab",1,"اتحاد مزدوج."],
+["۴x+۳+۲x برابر چیست؟","۶x+۳|۶x|۴x+۵|۹x",0,"۴x و ۲x متشابه‌اند."]
+]},
+{
+title:"خط و معادله‌های خطی",
+desc:"معادله، حل معادله، مختصات و شیب خط",
+lesson:`معادله تساوی دو عبارت است که در آن معمولاً مجهول وجود دارد.
+برای حل معادله، با انجام عمل یکسان روی دو طرف، مجهول را تنها می‌کنیم.
+معادلهٔ خطی دو متغیره را می‌توان به صورت y=ax+b نوشت.
+در این رابطه a شیب خط و b عرض از مبدأ است.`,
+tips:["هر عملی روی یک طرف معادله انجام می‌دهی، باید روی طرف دیگر هم انجام دهی.","برای بررسی جواب، آن را در معادله جای‌گذاری کن.","در y=ax+b، عدد a شیب خط است.","خط افقی شیب صفر دارد.","نقطهٔ روی محور x مختصات y برابر صفر دارد."],
+example:"در x+۵=۱۲، با کم کردن ۵ از دو طرف، x=۷ به دست می‌آید.",
+q:[
+["جواب x+۵=۱۲ چیست؟","۵|۶|۷|۸",2,"۱۲−۵=۷."],
+["جواب ۲x=۱۰ چیست؟","۲|۴|۵|۱۰",2,"دو طرف را بر ۲ تقسیم می‌کنیم."],
+["در y=۳x+۲ شیب خط چیست؟","۲|۳|۵|−۳",1,"ضریب x شیب خط است."],
+["اگر x−۴=۶ باشد، x چند است؟","۲|۱۰|۱۲|۲۴",1,"۴ را به دو طرف اضافه می‌کنیم."],
+["کدام نقطه روی محور x قرار دارد؟","(۰،۳)|(۲،۰)|(۱،۱)|(۳،۲)",1,"روی محور x، مؤلفهٔ دوم صفر است."],
+["جواب ۳x+۱=۱۰ چیست؟","۲|۳|۴|۵",1,"۳x=۹ پس x=۳."],
+["شیب خط افقی چند است؟","۰|۱|−۱|تعریف‌نشده",0,"خط افقی تغییر عمودی ندارد."],
+["اگر y=۲x و x=۳ باشد، y چند است؟","۳|۵|۶|۹",2,"۲×۳=۶."],
+["جواب x/۴=۳ چیست؟","۷|۸|۱۲|۱۶",2,"دو طرف را در ۴ ضرب می‌کنیم."],
+["در y=−۲x+۵ عرض از مبدأ چیست؟","−۲|۲|۵|−۵",2,"عدد ثابت ۵ است."]
+]},
+{
+title:"عبارت‌های گویا",
+desc:"عبارت گویا، ساده‌سازی کسرهای جبری و عملیات",
+lesson:`عبارت گویا کسری است که صورت و مخرج آن عبارت جبری باشند و مخرج صفر نباشد.
+برای ساده کردن کسر جبری، صورت و مخرج را تجزیه می‌کنیم و عامل‌های مشترک را حذف می‌کنیم.
+در جمع و تفریق کسرها باید مخرج مشترک پیدا کنیم.
+در ضرب کسرها، صورت‌ها و مخرج‌ها در هم ضرب می‌شوند.`,
+tips:["مخرج هیچ عبارت گویایی نباید صفر شود.","در ساده‌سازی فقط عامل مشترک را حذف کن، نه جمله‌های جمع‌شده را.","برای جمع کسرها مخرج مشترک لازم است.","تقسیم بر کسر یعنی ضرب در معکوس آن.","محدودیت‌های متغیر را فراموش نکن."],
+example:"۶x/۳ را با تقسیم صورت و مخرج بر ۳ ساده می‌کنیم و به ۲x می‌رسیم.",
+q:[
+["مخرج یک عبارت گویا چه شرطی دارد؟","باید صفر باشد|نباید صفر باشد|باید منفی باشد|شرطی ندارد",1,"تقسیم بر صفر تعریف نشده است."],
+["۶x/۳ ساده‌شده چیست؟","۲x|۳x|۶x|x/۲",0,"۶ تقسیم بر ۳ برابر ۲ است."],
+["۲/۳+۱/۳ برابر چیست؟","۱/۳|۲/۳|۱|۳/۶",2,"مخرج‌ها برابرند و صورت‌ها جمع می‌شوند."],
+["۱/۲×۲/۳ برابر چیست؟","۱/۳|۲/۵|۳/۲|۱",0,"صورت‌ها و مخرج‌ها را ضرب می‌کنیم."],
+["کدام مقدار برای x در ۱/(x−۲) مجاز نیست؟","۰|۱|۲|۳",2,"مخرج در x=۲ صفر می‌شود."],
+["۴x/۲ ساده می‌شود به؟","x|۲x|۴x|۸x",1,"۴ تقسیم بر ۲ برابر ۲ است."],
+["۳/۴−۱/۴ برابر چیست؟","۱/۴|۱/۲|۲/۴|۱",1,"۲/۴ برابر ۱/۲ است."],
+["معکوس ۲/۵ چیست؟","۲/۵|۵/۲|−۵/۲|۱/۵",1,"جای صورت و مخرج عوض می‌شود."],
+["در ضرب کسرها چه می‌کنیم؟","مخرج مشترک|صورت‌ها و مخرج‌ها را ضرب می‌کنیم|فقط صورت‌ها|فقط مخرج‌ها",1,"قاعدهٔ ضرب کسرها همین است."],
+["x/۵+x/۵ برابر چیست؟","x/۵|۲x/۵|x/۱۰|۲x",1,"مخرج برابر است و صورت‌ها جمع می‌شوند."]
+]},
+{
+title:"حجم و مساحت",
+desc:"مساحت سطح و حجم شکل‌های هندسی",
+lesson:`مساحت مقدار سطح یک شکل دوبعدی است و با واحدهای مربع بیان می‌شود.
+حجم مقدار فضای اشغال‌شده توسط جسم سه‌بعدی است و با واحدهای مکعب بیان می‌شود.
+حجم مکعب برابر ضلع به توان ۳ است.
+حجم مکعب‌مستطیل برابر طول × عرض × ارتفاع است.
+مساحت دایره برابر πr² است.`,
+tips:["واحد مساحت مربع است؛ مانند سانتی‌متر مربع.","واحد حجم مکعب است؛ مانند سانتی‌متر مکعب.","حجم مکعب‌مستطیل = طول × عرض × ارتفاع.","مساحت دایره = π×شعاع×شعاع.","در محاسبهٔ مساحت و حجم، واحدها را یکسان کن."],
+example:"حجم مکعب‌مستطیل با طول ۴، عرض ۳ و ارتفاع ۲ برابر ۲۴ واحد مکعب است.",
+q:[
+["حجم مکعب‌مستطیل با ابعاد ۲،۳،۴ چیست؟","۹|۱۲|۲۴|۲۴۰",2,"۲×۳×۴=۲۴."],
+["مساحت مربع ضلع ۵ چیست؟","۱۰|۲۰|۲۵|۳۰",2,"۵×۵=۲۵."],
+["حجم مکعب ضلع ۳ چیست؟","۹|۱۸|۲۷|۳۶",2,"۳×۳×۳=۲۷."],
+["مساحت مستطیل طول ۶ و عرض ۴ چیست؟","۱۰|۲۰|۲۴|۲۸",2,"۶×۴=۲۴."],
+["مساحت دایره با شعاع r کدام است؟","۲πr|πr²|πd|r²/۲",1,"فرمول مساحت دایره πr² است."],
+["اگر شعاع دایره ۲ باشد، مساحت آن چیست؟","۲π|۴π|۸π|۱۶π",1,"π×۲²=۴π."],
+["واحد معمول حجم کدام است؟","سانتی‌متر|سانتی‌متر مربع|سانتی‌متر مکعب|متر",2,"حجم با واحد مکعب بیان می‌شود."],
+["مساحت مثلث قاعده ۸ و ارتفاع ۵ چیست؟","۱۳|۲۰|۴۰|۸۰",1,"۸×۵÷۲=۲۰."],
+["محیط مربع ضلع ۴ چیست؟","۸|۱۲|۱۶|۲۰",2,"۴ ضلع برابر دارد: ۴×۴=۱۶."],
+["حجم مکعب‌مستطیل ۵×۲×۳ چیست؟","۱۰|۱۵|۲۰|۳۰",3,"۵×۲×۳=۳۰."]
+]}
 ];
-let index=0,score=0,answered=false;
-function show(){
-answered=false;
-document.getElementById("number").textContent="سؤال "+(index+1)+" از ۱۰";
-document.getElementById("question").textContent=questions[index][0];
-document.getElementById("options").innerHTML="";
-questions[index][1].forEach((v,i)=>{
-let b=document.createElement("button");
-b.className="option";
-b.style.display="block";b.style.width="100%";b.style.background="white";b.style.color="#172554";
-b.textContent=["الف) ","ب) ","ج) ","د) "][i]+v;
-b.onclick=()=>answer(i);
-document.getElementById("options").appendChild(b);
-});
-document.getElementById("feedback").textContent="";
-document.getElementById("next").disabled=true;
-document.getElementById("next").textContent=index===9?"نتیجه آزمون":"سؤال بعدی";
+
+let current=0,qi=0,selected=null,answers=[],questions=[];
+const $=id=>document.getElementById(id);
+function getData(){try{return JSON.parse(localStorage.getItem("riyazi9_data")||"{}")}catch(e){return {}}}
+function putData(d){localStorage.setItem("riyazi9_data",JSON.stringify(d))}
+function show(id){["welcome","home","lesson","quiz","result"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden");window.scrollTo(0,0)}
+function saveName(){
+ let n=$("nameInput").value.trim();if(!n){alert("لطفاً نامت را وارد کن.");return}
+ let d=getData();d.name=n;putData(d);init();
 }
-function answer(n){
-if(answered)return;
-answered=true;
-let correct=questions[index][2];
-if(n===correct){score+=2;document.getElementById("feedback").textContent="آفرین! پاسخ درست است 🌟";}
-else{document.getElementById("feedback").textContent="پاسخ درست: "+questions[index][1][correct];}
-document.getElementById("next").disabled=false;
+function init(){
+ let d=getData();
+ if(!d.name){show("welcome");return}
+ $("hello").textContent="سلام "+d.name+"! خوش آمدی 👋";
+ $("nameInput").value=d.name;
+ $("chapters").innerHTML="";
+ chapters.forEach((c,i)=>{
+  let b=document.createElement("button");b.className="chapter";
+  let best=d.scores?.[i];
+  b.innerHTML="<b>فصل "+(i+1)+" : "+c.title+"</b><small>"+c.desc+"</small><br><small>"+(best!==undefined?"آخرین نمره: "+best+" از ۲۰":"هنوز آزمون نداده‌ای")+"</small>";
+  b.onclick=()=>showLesson(i);$("chapters").appendChild(b);
+ });
+ let scores=d.scores||{},done=Object.keys(scores).length;
+ $("overall").textContent="فصل‌های آزمون‌داده‌شده: "+done+" از ۸";
+ $("report").innerHTML=done?chapters.map((c,i)=>scores[i]!==undefined?"فصل "+(i+1)+" («"+c.title+"»): "+scores[i]+" از ۲۰":"").filter(Boolean).join("<br>"):"هنوز آزمونی انجام نداده‌ای.";
+ show("home");
 }
-function next(){
-if(!answered)return;
-if(index<9){index++;show();}
-else{
-document.querySelector(".card").innerHTML="<h2>نتیجه آزمون 🎉</h2><p id='result'>نمره تو: "+score+" از ۲۰</p><button onclick='location.reload()'>آزمون دوباره</button>";
+function showLesson(i){
+ current=i;let c=chapters[i];
+ $("chapterLabel").textContent="فصل "+(i+1);
+ $("chapterTitle").textContent=c.title;
+ $("explanation").textContent=c.lesson;
+ $("tips").innerHTML=c.tips.map(t=>"<div class='note'>⭐ "+t+"</div>").join("");
+ $("example").textContent=c.example;
+ show("lesson");
 }
+function startQuiz(){
+ questions=chapters[current].q;qi=0;answers=[];selected=null;
+ $("quizChapter").textContent="فصل "+(current+1)+" : "+chapters[current].title;
+ renderQuestion();show("quiz");
 }
-show();
+function renderQuestion(){
+ let q=questions[qi],opts=q[1].split("|");
+ $("counter").textContent="سؤال "+(qi+1)+" از ۱۰";
+ $("bar").style.width=(qi/10*100)+"%";
+ $("question").textContent=q[0];$("options").innerHTML="";
+ $("feedback").innerHTML="";$("feedback").className="";
+ opts.forEach((v,i)=>{
+  let b=document.createElement("button");b.className="option";
+  b.textContent=["الف) ","ب) ","ج) ","د) "][i]+v;
+  b.onclick=()=>choose(i,b);$("options").appendChild(b);
+ });
+ $("next").disabled=true;
+ $("next").textContent=qi===9?"دیدن نتیجه":"سؤال بعدی";
+}
+function choose(i,button){
+ if(selected!==null)return;
+ selected=i;answers[qi]=i;
+ document.querySelectorAll(".option").forEach(b=>b.disabled=true);
+ button.classList.add("selected");
+ let q=questions[qi],correct=i===q[2];
+ $("feedback").className=correct?"good":"bad";
+ $("feedback").textContent=(correct?"آفرین! پاسخ درست است. ":"پاسخ درست: "+["الف","ب","ج","د"][q[2]]+" — ")+q[3];
+ $("next").disabled=false;
+}
+function nextQuestion(){
+ if(selected===null)return;
+ if(qi<9){qi++;selected=null;renderQuestion()}
+ else finishQuiz();
+}
+function finishQuiz(){
+ let score=answers.reduce((s,a,i)=>s+(a===questions[i][2]?2:0),0);
+ let d=getData();d.scores=d.scores||{};d.scores[current]=score;putData(d);
+ $("score").textContent=score+" از ۲۰";
+ $("resultText").textContent=score>=18?"عالی بود! تسلط خیلی خوبی داری.":score>=14?"خوب بود! چند نکته را دوباره مرور کن.":score>=10?"قابل قبول است؛ پیشنهاد می‌کنیم آموزش را دوباره بخوانی.":"بهتر است آموزش و نکات فصل را دوباره مطالعه کنی و آزمون را تکرار کنی.";
+ $("review").innerHTML=questions.map((q,i)=>{
+  let ok=answers[i]===q[2];
+  return "<div class='note'><b>سؤال "+(i+1)+"</b> — "+(ok?"درست ✅":"نیاز به مرور ❌")+"<br>"+q[0]+"<br>پاسخ صحیح: "+["الف","ب","ج","د"][q[2]]+" ) "+q[1].split("|")[q[2]]+"<br><small>"+q[3]+"</small></div>";
+ }).join("");
+ init();
+ show("result");
+}
+function goHome(){init()}
+function resetProgress(){
+ if(confirm("آیا مطمئنی که می‌خواهی نمره‌ها و پیشرفت آزمون‌ها پاک شوند؟")){
+  let d=getData();delete d.scores;putData(d);init();
+ }
+}
+init();
 </script>
 </body>
 </html>
+
